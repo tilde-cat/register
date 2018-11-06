@@ -20,7 +20,7 @@ Status: {{ .Status }}
 
 var errorTemplate = template.Must(footer.New("error").Parse(`
 {{ template "header" . }}
-<p>Error, all form fields must be field.</p>
+<p>Error, all form fields must be non empty.</p>
 <a href="/">take ma back</a>
 {{ template "footer" . }}`))
 
