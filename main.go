@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -18,7 +17,13 @@ const (
 	ErrorUrl               = "/error"
 )
 
-var statusRE = regexp.MustCompile(RequestStatusUrlPrefix + `(.+)$`)
+var config = struct {
+	Title string
+}{
+	Title: "~🐱 Sign up!",
+}
+
+var statusRE = regexp.MustCompile("^" + RequestStatusUrlPrefix + `(.+)$`)
 
 type Id uuid.UUID
 
@@ -91,10 +96,11 @@ func (s *Server) RequestPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fmt.Fprintf(w, "Status: %v", req.Status)
-}
-
-func (s *Server) IncorrectRequest(w http.ResponseWriter, r *http.Request) {
+	config := map[string]interface{}{
+		"Global": config,
+		"Status": req.Status,
+	}
+	statusTemplate.ExecuteTemplate(w, "status", config)
 }
 
 func (s *Server) FormPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -116,15 +122,14 @@ func (s *Server) FormPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) FormPage(w http.ResponseWriter, r *http.Request) {
-	formTemplate.Execute(w, nil)
+	formTemplate.Execute(w, config)
 }
 
 func main() {
 	var io FsIo
 	server := Server{Io: &io}
 	http.HandleFunc(RequestStatusUrlPrefix, server.RequestPage)
-	http.HandleFunc(ErrorUrl, server.IncorrectRequest)
 	http.HandleFunc(FormPostUrl, server.FormPostHandler)
 	http.HandleFunc(FormUrl, server.FormPage)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe("localhost:5678", nil))
 }

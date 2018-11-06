@@ -2,21 +2,44 @@ package main
 
 import "html/template"
 
-var formTemplate = template.Must(template.New("form").Parse(`
-<html>
+var header = template.Must(template.New("header").Parse(`<html>
+<head>
+<title>{{.Title}}</title>
+<link rel="stylesheet" href="http://tilde.cat/style.css">
+</head>
 <body>
-<h1>~🐱 signup form</h1>
+`))
+
+var footer = template.Must(header.New("footer").Parse(`</body>
+</html>`))
+
+var statusTemplate = template.Must(footer.New("status").Parse(`
+{{ template "header" .Global }}
+Status: {{ .Status }}
+{{ template "footer" .Global }}`))
+
+var formTemplate = template.Must(header.New("form").Parse(`{{ template "header" . }}
+<h1>~🐱 Sign up form</h1>
 <form action="/post" method="post">
-Username:
-<input type="text" name="username"><br/>
-Email:
-<input type="email" name="email"><br/>
-Why would you want an account here?
-<textarea name="why" cols=50 rows=10></textarea><br/>
-SSH key:
-<textarea name="sshpublickey" cols=50 rows=10></textarea><br/>
-<input type="submit" value="Submit">
+<table>
+<tr>
+<th>Username:</th>
+<th><input type="text" name="username"><br/></th>
+</tr>
+<tr>
+<th>Email:</th>
+<th><input type="email" name="email"><br/></th>
+</tr>
+<tr>
+<th>Why would you want an account here?</th>
+<th><textarea name="why" cols=50 rows=10></textarea><br/></th>
+</tr>
+<tr>
+<th>SSH key:</th>
+<th><textarea name="sshpublickey" cols=50 rows=10></textarea><br/></th>
+</tr>
+<tr><th colspan="2"><input type="submit" value="Submit"></th></tr>
+</table>
 </form>
-</body>
-</html>
+{{ template "footer" . }}
 `))
