@@ -125,11 +125,16 @@ func (s *Server) FormPage(w http.ResponseWriter, r *http.Request) {
 	formTemplate.Execute(w, config)
 }
 
+func (s *Server) ErrorPage(w http.ResponseWriter, r *http.Request) {
+	errorTemplate.Execute(w, config)
+}
+
 func main() {
 	var io FsIo
 	server := Server{Io: &io}
 	http.HandleFunc(RequestStatusUrlPrefix, server.RequestPage)
 	http.HandleFunc(FormPostUrl, server.FormPostHandler)
 	http.HandleFunc(FormUrl, server.FormPage)
+	http.HandleFunc(ErrorUrl, server.ErrorPage)
 	log.Fatal(http.ListenAndServe("localhost:5678", nil))
 }

@@ -18,6 +18,12 @@ var statusTemplate = template.Must(footer.New("status").Parse(`
 Status: {{ .Status }}
 {{ template "footer" .Global }}`))
 
+var errorTemplate = template.Must(footer.New("error").Parse(`
+{{ template "header" . }}
+<p>Error, all form fields must be field.</p>
+<a href="/">take ma back</a>
+{{ template "footer" . }}`))
+
 var formTemplate = template.Must(header.New("form").Parse(`{{ template "header" . }}
 <h1>~🐱 Sign up form</h1>
 <form action="/post" method="post">
