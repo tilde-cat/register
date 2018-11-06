@@ -25,7 +25,7 @@ var errorTemplate = template.Must(footer.New("error").Parse(`
 {{ template "footer" . }}`))
 
 var formTemplate = template.Must(header.New("form").Parse(`{{ template "header" . }}
-<h1>~🐱 Sign up form</h1>
+<h1><a href="http://tilde.cat">~🐱</a> Sign up form</h1>
 <form action="/post" method="post">
 <table>
 <tr>
