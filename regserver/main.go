@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/tilde-cat/register"
 	"github.com/satori/go.uuid"
+	"github.com/tilde-cat/register"
 )
 
 const (

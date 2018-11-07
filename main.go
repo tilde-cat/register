@@ -14,4 +14,3 @@ func (r *Request) IsValid() bool {
 		r.Why != "" &&
 		r.SSHPublicKey != ""
 }
-

@@ -9,9 +9,10 @@ import (
 	"testing"
 
 	uuid "github.com/satori/go.uuid"
+	"github.com/tilde-cat/register"
 )
 
-var expected = Request{
+var expected = register.Request{
 	Username:     "name",
 	Email:        "test@example.com",
 	Why:          "foo bar baz",
@@ -20,7 +21,7 @@ var expected = Request{
 }
 
 type ReqEntry struct {
-	Request Request
+	Request register.Request
 	Id      Id
 }
 
@@ -33,13 +34,13 @@ func NewIoStub() *IoStub {
 	return &IoStub{}
 }
 
-func (io *IoStub) Save(r Request) (Id, error) {
+func (io *IoStub) Save(r register.Request) (Id, error) {
 	id := Id(uuid.NewV4())
 	io.Saved = append(io.Saved, ReqEntry{r, id})
 	return id, nil
 }
 
-func (io *IoStub) Load(id Id) (*Request, error) {
+func (io *IoStub) Load(id Id) (*register.Request, error) {
 	io.Loads = append(io.Loads, id)
 	for _, r := range io.Saved {
 		if r.Id == id {
@@ -83,7 +84,7 @@ func TestRequestSaveAfterCorrectFormPost(t *testing.T) {
 }
 
 func TestRedirectToFailureWhenAnyRequestFieldIsEmtpy(t *testing.T) {
-	data := []Request{
+	data := []register.Request{
 		{Username: "", Email: expected.Email, Why: expected.Why, SSHPublicKey: expected.SSHPublicKey},
 		{Username: expected.Username, Email: "", Why: expected.Why, SSHPublicKey: expected.SSHPublicKey},
 		{Username: expected.Username, Email: expected.Email, Why: "", SSHPublicKey: expected.SSHPublicKey},

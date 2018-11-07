@@ -1,18 +1,18 @@
 package main
 
 import (
-	"strings"
-	"flag"
 	"bytes"
-	"strconv"
-	"fmt"
-	"os"
-	"os/user"
-	"os/exec"
 	"encoding/json"
+	"flag"
+	"fmt"
+	"github.com/tilde-cat/register"
 	"io/ioutil"
 	"log"
-	"github.com/tilde-cat/register"
+	"os"
+	"os/exec"
+	"os/user"
+	"strconv"
+	"strings"
 )
 
 var verbose = flag.Bool("v", false, "verbose")
@@ -28,7 +28,7 @@ func readRequest(path string) (*register.Request, error) {
 	return &r, err
 }
 
-func shell(cmd string, args... string) {
+func shell(cmd string, args ...string) {
 	var errOut bytes.Buffer
 	c := exec.Command(cmd, args...)
 	c.Stderr = &errOut
@@ -70,7 +70,7 @@ func main() {
 	}
 
 	shell("adduser", "--disabled-login", "--gecos", "", r.Username)
-	authorizedKeysPath := "/home/"+r.Username+"/.ssh/authorized_keys"
+	authorizedKeysPath := "/home/" + r.Username + "/.ssh/authorized_keys"
 	if err = ioutil.WriteFile(authorizedKeysPath, []byte(fixKey(r.SSHPublicKey)), 0664); err != nil {
 		log.Fatal("sshkey instalation failed: %v", err)
 	}
