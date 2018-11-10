@@ -91,6 +91,9 @@ func getAllPendingRequests() {
 			log.Println(err)
 			continue
 		}
+        if !r.IsPending() {
+            continue
+        }
 		log.Printf("%v: %v", r.Username, pathToId(path))
 	}
 }

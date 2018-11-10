@@ -8,6 +8,10 @@ type Request struct {
 	Status       string
 }
 
+func (r *Request) IsPending() bool {
+    return r.Status == "Pending"
+}
+
 func (r *Request) IsValid() bool {
 	return r.Username != "" &&
 		r.Email != "" &&
