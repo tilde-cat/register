@@ -5,7 +5,7 @@ import "html/template"
 var header = template.Must(template.New("header").Parse(`<html>
 <head>
 <title>{{.Title}}</title>
-<link rel="stylesheet" href="http://tilde.cat/style.css">
+<link rel="stylesheet" href="https://tilde.cat/style.css">
 </head>
 <body>
 `))
