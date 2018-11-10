@@ -11,14 +11,39 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-var verbose = flag.Bool("v", false, "verbose")
-var dry = flag.Bool("dry", true, "dry run")
+var (
+	verbose         = flag.Bool("v", false, "verbose")
+	dry             = flag.Bool("dry", true, "dry run")
+	pending         = flag.Bool("pending", false, "list pending registration requests")
+	registrationDir = flag.String("reg-dir", "/var/registrations", "directory where registration request will be searched for")
+	list            = flag.Bool("list", false, "list all pending requests")
+)
 
-func readRequest(path string) (*register.Request, error) {
+var idRE = regexp.MustCompile(".*/(.*).json")
+
+func idToPath(id string) string {
+	return filepath.Join(*registrationDir, id+".json")
+}
+
+func pathToId(path string) string {
+	m := idRE.FindStringSubmatch(path)
+	if len(m) != 2 {
+		return ""
+	}
+	return m[1]
+}
+
+func readRequest(id string) (*register.Request, error) {
+	return readRequestForm(idToPath(id))
+}
+
+func readRequestForm(path string) (*register.Request, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -26,6 +51,18 @@ func readRequest(path string) (*register.Request, error) {
 	var r register.Request
 	err = json.Unmarshal(b, &r)
 	return &r, err
+}
+
+func saveRequest(id string, request register.Request) error {
+	path := idToPath(id)
+	b, err := json.MarshalIndent(request, "", "\t")
+	if err != nil {
+		log.Fatalf("Failed to serialize request: %v\n", err)
+	}
+	if err := ioutil.WriteFile(path, b, 0666); err != nil {
+		log.Fatalf("Failed to save request: %v\n", err)
+	}
+	return nil
 }
 
 func shell(cmd string, args ...string) {
@@ -42,15 +79,35 @@ func fixKey(key string) string {
 	return strings.Replace(strings.Replace(key, "\n", "", -1), "\r", "", -1)
 }
 
+func getAllPendingRequests() {
+	paths, err := filepath.Glob(*registrationDir + "/*.json")
+	if err != nil {
+		log.Println("falied to list pending requests: %v", err)
+		return
+	}
+	for _, path := range paths {
+		r, err := readRequestForm(path)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		log.Printf("%v: %v", r.Username, pathToId(path))
+	}
+}
+
 func main() {
 	flag.Parse()
+	if *list {
+		getAllPendingRequests()
+		return
+	}
 	if len(flag.Args()) != 1 {
-		fmt.Fprintf(os.Stderr, "usage: %s [OPTIONS] file\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "usage: %s [OPTIONS] uuid\n", os.Args[0])
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	path := flag.Arg(0)
-	r, err := readRequest(path)
+	id := flag.Arg(0)
+	r, err := readRequest(id)
 	if err != nil {
 		log.Fatalf("Failed to read request: %v", err)
 	}
@@ -87,11 +144,7 @@ func main() {
 		log.Fatal("chown failed: %v", err)
 	}
 	r.Status = "Account created"
-	b, err := json.MarshalIndent(r, "", "\t")
-	if err != nil {
-		log.Fatalf("Failed to serialize request: %v\n", err)
-	}
-	if err := ioutil.WriteFile(path, b, 0666); err != nil {
-		log.Fatalf("Failed to save request: %v\n", err)
+	if err := saveRequest(id, *r); err != nil {
+		log.Fatal("Saving request failed: %v", err)
 	}
 }

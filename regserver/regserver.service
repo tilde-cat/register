@@ -1,0 +1,11 @@
+[Unit]
+Description=User registration service
+
+[Service]
+WorkingDirectory=/var/registrations
+ExecStart=/opt/regserver
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
